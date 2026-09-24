@@ -1,0 +1,7 @@
+{
+  "name": "warden",
+  "description": "Runtime verification for Claude Code skills: observe every tool call, enforce declared capabilities, record replayable trajectories.",
+  "version": "0.2.0",
+  "homepage": "https://github.com/Hans-wan/warden",
+  "repository": "https://github.com/Hans-wan/warden"
+}

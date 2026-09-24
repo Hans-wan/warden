@@ -1,0 +1,34 @@
+#!/bin/sh
+# warden plugin launcher: picks the right prebuilt binary for this platform
+# and execs it. The host expands ${CLAUDE_PLUGIN_ROOT} inside hooks.json, so
+# when this script runs from a hook the variable is already set; when run by
+# hand it falls back to the script's own directory.
+set -eu
+
+root="${CLAUDE_PLUGIN_ROOT:-}"
+if [ -z "$root" ]; then
+  root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+fi
+
+os=$(uname -s)
+arch=$(uname -m)
+
+case "$os" in
+  Darwin) plat="darwin-arm64" ;;   # macOS: only Apple Silicon ships as arm64 binaries
+  Linux)
+    case "$arch" in
+      x86_64|amd64) plat="linux-x64" ;;
+      *) echo "warden: unsupported architecture: $arch" >&2; exit 1 ;;
+    esac
+    ;;
+  *) echo "warden: unsupported platform: $os" >&2; exit 1 ;;
+esac
+
+bin="$root/bin/$plat/warden"
+if [ ! -x "$bin" ]; then
+  echo "warden: binary missing for this platform: $bin" >&2
+  echo "warden: reinstall the plugin so the dist bundle is complete" >&2
+  exit 1
+fi
+
+exec "$bin" "$@"

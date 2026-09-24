@@ -1,0 +1,86 @@
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: macos-14
+            plat: darwin-arm64
+          - os: ubuntu-24.04
+            plat: linux-x64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Ninja (macOS)
+        if: runner.os == 'macOS'
+        run: brew install ninja
+      - name: Configure and build
+        run: |
+          cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+          cmake --build build
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+      - name: Stage platform binary
+        run: |
+          mkdir -p stage/bin/${{ matrix.plat }}
+          cp build/warden stage/bin/${{ matrix.plat }}/warden
+      - uses: actions/upload-artifact@v4
+        with:
+          name: warden-${{ matrix.plat }}
+          path: stage
+
+  publish:
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: /tmp/artifacts
+      - name: Push dist branch
+        run: |
+          git config user.name "warden-release-bot"
+          git config user.email "bot@users.noreply.github.com"
+          SRC=$(git rev-parse HEAD)
+          git checkout --orphan dist-tmp
+          git rm -rf . -q
+          # Assemble AFTER the wipe: `git rm -rf .` deletes the checkout's
+          # tracked top-level dirs (bin/, hooks/, commands/, src/, ...), and
+          # those are exactly what `mv dist/*` would collide with
+          # ("mv: dist/bin: Directory not empty"). Reassembling here, from
+          # git and from /tmp/artifacts, means `mv dist/* .` has a worktree
+          # containing nothing but dist/ to move into.
+          #
+          # $SRC is captured BEFORE `git checkout --orphan`: on an orphan
+          # branch HEAD is unborn, so `git show HEAD:<path>` fails with
+          # "fatal: invalid object name 'HEAD'". The release commit is still
+          # reachable by its SHA (== the tag), so we read the sources from
+          # $SRC. Artifacts come from /tmp/artifacts, which lives OUTSIDE the
+          # worktree — without that, `git add -A` below would sweep the
+          # artifact tree into the dist branch.
+          mkdir -p dist/bin/darwin-arm64 dist/bin/linux-x64 dist/hooks dist/commands
+          git show "$SRC":.claude-plugin/plugin.json > dist/plugin.json
+          git show "$SRC":hooks/hooks.json > dist/hooks/hooks.json
+          git show "$SRC":commands/status.md > dist/commands/status.md
+          git show "$SRC":bin/warden-launcher > dist/bin/warden-launcher
+          git show "$SRC":README.md > dist/README.md
+          git show "$SRC":README.zh-CN.md > dist/README.zh-CN.md
+          git show "$SRC":LICENSE > dist/LICENSE
+          chmod +x dist/bin/warden-launcher
+          cp /tmp/artifacts/warden-darwin-arm64/bin/darwin-arm64/warden dist/bin/darwin-arm64/warden
+          cp /tmp/artifacts/warden-linux-x64/bin/linux-x64/warden dist/bin/linux-x64/warden
+          mv dist/* .
+          rmdir dist
+          git add -A
+          git commit -m "dist: release ${{ github.ref_name }}"
+          git push origin dist-tmp:dist --force

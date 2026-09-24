@@ -1,0 +1,9 @@
+# warden factory-default policy.
+# Observation-first defaults: observe mode, never blocks.
+# A project may override any entry in .warden/policy.yaml.
+default: observe
+capabilities:
+  fs:delete: ask      # deletion: the most common "pause first" case
+  git:push: ask       # the only remote-mutating operation
+  pkg:install: ask    # highest supply-chain risk
+  secrets:read: ask   # touching secret files

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="300" viewBox="0 0 1200 300" role="img" aria-label="warden — runtime verification for Claude Code skills">
+  <!-- 浅色版:纯白底 + 细点阵纹理 -->
+  <defs>
+    <pattern id="dots" width="26" height="26" patternUnits="userSpaceOnUse">
+      <circle cx="1.5" cy="1.5" r="1.5" fill="#e8e8e8"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="300" fill="#ffffff"/>
+  <rect width="1200" height="300" fill="url(#dots)"/>
+
+  <!-- 盾 + 眼:单笔流畅线条 -->
+  <g stroke="#0a0a0a" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M600 52
+             C 626 62, 646 68, 652 70
+             C 652 118, 646 150, 600 172
+             C 554 150, 548 118, 548 70
+             C 554 68, 574 62, 600 52" stroke-width="10"/>
+    <path d="M568 112
+             C 576 98, 624 98, 632 112
+             C 624 126, 576 126, 568 112 Z" stroke-width="8"/>
+    <circle cx="600" cy="112" r="7.5" stroke-width="7"/>
+  </g>
+
+  <!-- WARDEN -->
+  <text x="600" y="230" text-anchor="middle"
+        font-family="-apple-system,'Segoe UI','Helvetica Neue',Arial,sans-serif"
+        font-size="36" font-weight="700" letter-spacing="22" fill="#0a0a0a">WARDEN</text>
+
+  <!-- tagline -->
+  <text x="600" y="268" text-anchor="middle"
+        font-family="-apple-system,'Segoe UI','Helvetica Neue',Arial,sans-serif"
+        font-size="18" fill="#737373">Runtime verification for Claude Code skills</text>
+</svg>
