@@ -34,7 +34,7 @@ TEST(Payload, ParseSample) {
 }
 
 TEST(Payload, ParseSubagentFields) {
-  // Tool calls inside a subagent carry top-level agent_id/agent_type (measured fact 3c).
+  // Tool calls inside a subagent carry top-level agent_id/agent_type.
   static const char kSub[] = R"({
     "session_id": "s1",
     "hook_event_name": "PreToolUse",

@@ -39,8 +39,8 @@ std::optional<Payload> parsePayload(std::string_view json, std::string& err) {
     if (it != j.end()) p.toolInput = it->second;
   }
   // Every tool call inside a subagent carries top-level agent_id/agent_type
-  // (measured fact 3c, undocumented); the main agent does not — absence is
-  // normal, and the empty string means "main agent".
+  // (not part of the documented payload shape); the main agent does not —
+  // absence is normal, and the empty string means "main agent".
   p.agentId = strField(j, "agent_id");
   p.agentType = strField(j, "agent_type");
   return p;
